@@ -1,0 +1,72 @@
+# ==============================================
+# Agent 开发助手 — 默认配置
+# ==============================================
+
+# Agent Settings
+agent:
+  name: "Agent开发助手"
+  max_iterations: 10
+  verbose: true
+  stop_on_error: true
+
+# LLM Settings
+llm:
+  default_model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 4096
+  streaming: true
+
+# Memory Settings
+memory:
+  buffer_max_tokens: 4000          # L0 buffer 上限
+  summary_trigger_tokens: 3000      # 触发摘要压缩的阈值
+  semantic_top_k: 5                # L2 语义记忆检索数量
+  episodic_top_k: 3                # L3 情景记忆检索数量
+  importance_threshold: 0.5        # 写入语义记忆的最低重要性
+
+# Compression Settings
+compression:
+  max_context_tokens: 8000          # 总上下文 token 上限
+  strategy_sequence:                # 压缩策略优先级
+    - window
+    - summarize
+    - retrieve
+  summary_max_tokens: 500           # 单条摘要最大 token
+
+# RAG Knowledge Base Settings
+rag:
+  database_url: "sqlite:///data/knowledge.db"
+  chroma_persist_dir: "data/chroma_kb"
+  embedding_provider: "openai"                       # openai / ollama / openai_compatible
+  embedding_model: "text-embedding-3-small"           # 嵌入模型名
+  embedding_base_url: ""                              # 兼容接口 base_url
+  chunk_size: 500                                    # 分块大小
+  chunk_overlap: 50                                  # 分块重叠
+  chunk_strategy: "recursive"                        # fixed / recursive / sentence
+  default_top_k: 5                                   # 默认检索条数
+  hybrid_alpha: 0.7                                  # 混合权重 (0=纯向量, 1=纯BM25)
+  vector_top_k: 10                                   # 向量检索候选数
+  bm25_top_k: 10                                     # BM25 检索候选数
+
+# Document Classification
+classifier:
+  watch_directories: []             # 监控目录列表
+  default_rules_enabled: true
+  auto_categorize: false
+
+# Scheduler
+scheduler:
+  enabled: false                    # Phase 3 启用
+  max_reminders: 50
+
+# Storage
+storage:
+  database_url: "sqlite:///data/agent.db"
+  chroma_persist_dir: "data/chroma"
+
+# Logging
+logging:
+  level: "INFO"
+  file: "data/logs/agent.log"
+  rotation: "10 MB"
+  retention: "7 days"

@@ -1,0 +1,65 @@
+# ==============================================
+# 可用模型列表
+# ==============================================
+models:
+  # -------- OpenAI --------
+  - name: "gpt-4o"
+    provider: "openai"
+    model_id: "gpt-4o"
+    api_key_env: "OPENAI_API_KEY"
+    description: "最强综合能力"
+
+  - name: "gpt-4o-mini"
+    provider: "openai"
+    model_id: "gpt-4o-mini"
+    api_key_env: "OPENAI_API_KEY"
+    description: "轻量快速，日常首选"
+
+  # -------- Anthropic --------
+  - name: "claude-opus"
+    provider: "anthropic"
+    model_id: "claude-3-opus-20240229"
+    api_key_env: "ANTHROPIC_API_KEY"
+    description: "深度推理"
+
+  - name: "claude-sonnet"
+    provider: "anthropic"
+    model_id: "claude-3-sonnet-20240229"
+    api_key_env: "ANTHROPIC_API_KEY"
+    description: "平衡性能与成本"
+
+  # -------- 通义千问 (DashScope) --------
+  - name: "qwen-turbo"
+    provider: "openai_compatible"
+    model_id: "qwen-turbo"
+    api_key_env: "DASHSCOPE_API_KEY"
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    description: "通义千问快速版"
+
+  - name: "qwen-plus"
+    provider: "openai_compatible"
+    model_id: "qwen-plus"
+    api_key_env: "DASHSCOPE_API_KEY"
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    description: "通义千问增强版"
+
+  # -------- 本地模型 (Ollama) --------
+  - name: "ollama-llama3"
+    provider: "ollama"
+    model_id: "llama3"
+    base_url: "http://localhost:11434"
+    description: "本地 Llama3"
+
+  - name: "ollama-qwen2"
+    provider: "ollama"
+    model_id: "qwen2"
+    base_url: "http://localhost:11434"
+    description: "本地 Qwen2"
+
+  # -------- DeepSeek --------
+  - name: "deepseek-chat"
+    provider: "openai_compatible"
+    model_id: "deepseek-chat"
+    api_key_env: "DEEPSEEK_API_KEY"
+    base_url: "https://api.deepseek.com/v1"
+    description: "DeepSeek Chat"

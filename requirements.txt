@@ -1,0 +1,50 @@
+# Agent Core
+langchain>=0.2.0
+langchain-openai>=0.1.0
+langchain-community>=0.2.0
+langchain-text-splitters>=0.2.0
+litellm>=1.35.0
+
+# CLI
+typer>=0.12.0
+rich>=13.7.0
+
+# Storage
+sqlalchemy>=2.0.0
+chromadb>=0.5.0
+
+# Document Parsing
+unstructured>=0.12.0
+python-docx>=1.1.0
+PyPDF2>=3.0.0
+
+# File Monitoring
+watchdog>=4.0.0
+
+# Scheduling
+apscheduler>=3.10.0
+
+# Memory & Compression
+tiktoken>=0.6.0
+
+# RAG
+rank-bm25>=0.2.2
+
+# API (Phase 2)
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+
+# Desktop UI (Phase 2)
+PySide6>=6.6.0
+
+# Config & Settings
+pydantic>=2.6.0
+pydantic-settings>=2.1.0
+pyyaml>=6.0.0
+
+# Logging
+loguru>=0.7.0
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
