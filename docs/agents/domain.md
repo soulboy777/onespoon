@@ -5,10 +5,12 @@ How the engineering skills should consume this repo's domain documentation when 
 ## Before exploring, read these
 
 - **`CONTEXT-MAP.md`** at the repo root — multi-context layout. Map points to:
-  - `CONTEXT.md` (root) — agent-engine: Core agent, memory, compression, tools, storage, classifier, scheduler
+  - `CONTEXT.md` (root) — agent-engine: Core agent, memory, tools, storage, classifier, scheduler
   - `src/rag/CONTEXT.md` — rag: Knowledge base, ingestion, retrieval, BM25
+  - `src/compression/CONTEXT.md` — compression: Token counting, summarization, window/summarize/retrieve strategies
 - **`docs/adr/`** — system-wide architecture decisions.
 - **`src/rag/docs/adr/`** — rag-specific architecture decisions.
+- **`src/compression/docs/adr/`** — compression-specific architecture decisions.
 
 If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The producer skill (`/grill-with-docs`) creates them lazily when terms or decisions actually get resolved.
 
@@ -22,9 +24,12 @@ Multi-context repo:
 ├── CONTEXT.md                          ← agent-engine
 ├── docs/adr/                           ← system-wide decisions
 └── src/
-    └── rag/
-        ├── CONTEXT.md                  ← rag
-        └── docs/adr/                   ← rag-specific decisions
+    ├── rag/
+    │   ├── CONTEXT.md                  ← rag
+    │   └── docs/adr/                   ← rag-specific decisions
+    └── compression/
+        ├── CONTEXT.md                  ← compression
+        └── docs/adr/                   ← compression-specific decisions
 ```
 
 ## Use the glossary's vocabulary
