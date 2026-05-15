@@ -32,6 +32,9 @@ def chat(
     """启动交互式对话"""
     from src.core.agent import Agent
     from src.memory.manager import MemoryManager
+    from src.planning.manager import PlanManager
+    from src.planning.planner import PlanModeAgent
+    from src.planning.executor import ExecuteModeAgent
     from src.rag.manager import KnowledgeBaseManager
 
     setup_logging()
@@ -47,7 +50,10 @@ def chat(
     llm = get_llm(model)
     tools = create_default_tools()
     memory_manager = MemoryManager(llm)
-    agent = Agent(llm, tools, memory_manager=memory_manager)
+    agent = Agent(llm, tools, memory_manager=memory_manager, mode="execute")
+    plan_manager = PlanManager()
+    planner = None
+    executor = None
 
     # 初始化 RAG 工具
     try:
@@ -61,33 +67,168 @@ def chat(
         kb_manager = None
 
     console.print("[dim]模型: {}[/dim]".format(model or config.llm.default_model))
+    console.print("[dim]模式: [bold green]EXECUTE[/bold green] (输入 /plan 切换)[/dim]")
     console.print("[dim]工具: {}[/dim]".format(", ".join(t.name for t in tools)))
     console.print()
 
     while True:
         try:
-            user_input = typer.prompt("You", prompt_suffix=" > ")
+            mode_label = f"[{'PLAN' if agent.mode == 'plan' else 'EXEC'}] "
+            user_input = typer.prompt(mode_label + "You", prompt_suffix=" > ")
         except (KeyboardInterrupt, EOFError):
             console.print("\n再见！")
             break
 
-        if user_input.strip() == "/exit":
+        inp = user_input.strip()
+
+        if inp == "/exit":
             console.print("再见！")
             break
-        elif user_input.strip() == "/help":
+        elif inp == "/help":
             _show_help()
             continue
-        elif user_input.strip() == "/models":
+        elif inp == "/models":
             _list_models()
             continue
-        elif user_input.strip() == "/tools":
-            _list_tools(tools)
+        elif inp == "/tools":
+            _list_tools(agent.active_tools)
             continue
-        elif not user_input.strip():
+        elif inp == "/mode":
+            current = agent.mode
+            mode_name = "[bold green]EXECUTE[/bold green]" if current == "plan" else "[bold cyan]PLAN[/bold cyan]"
+            console.print(f"当前模式: {mode_name}")
+            continue
+
+        # ---- Plan Commands ----
+        elif inp == "/plan":
+            agent.set_mode("plan")
+            console.print(Panel(
+                "[bold cyan]PLAN MODE[/bold cyan] — 只读模式，Agent 只能读取和搜索，不能修改文件\n"
+                "输入 /plan new <描述> 创建新计划\n"
+                "输入 /execute 切换回执行模式\n"
+                "输入 /execute <id> 执行指定计划",
+                border_style="cyan",
+            ))
+            continue
+
+        elif inp == "/execute":
+            agent.set_mode("execute")
+            console.print(Panel(
+                "[bold green]EXECUTE MODE[/bold green] — 全部工具可用\n"
+                "输入 /plans 查看已有计划\n"
+                "输入 /execute <id> 执行指定计划",
+                border_style="green",
+            ))
+            continue
+
+        elif inp.startswith("/plan"):
+            parts = inp.split(maxsplit=2)
+            if len(parts) < 2:
+                _show_plan_help()
+                continue
+
+            sub = parts[1]
+            if sub == "new":
+                desc = parts[2] if len(parts) > 2 else ""
+                if not desc:
+                    console.print("[red]用法: /plan new <描述>[/red]")
+                    continue
+                if agent.mode != "plan":
+                    agent.set_mode("plan")
+                if planner is None:
+                    planner = PlanModeAgent(llm, tools)
+                with console.status("[bold cyan]生成计划中..."):
+                    result = planner.generate_plan(desc)
+                console.print()
+                console.print(Panel(Markdown(result), title="Plan"))
+                console.print()
+                continue
+
+            elif sub == "show":
+                plan_id = parts[2] if len(parts) > 2 else ""
+                if not plan_id:
+                    plans = plan_manager.list_plans()
+                    console.print(Panel(Markdown(plan_manager.to_display_list(plans)), title="计划列表"))
+                    continue
+                plan = plan_manager.get_plan(plan_id)
+                if plan:
+                    console.print(Panel(Markdown(plan_manager.to_detail_string(plan)), title=f"计划: {plan.title}"))
+                else:
+                    console.print(f"[red]计划不存在: {plan_id}[/red]")
+                continue
+
+            elif sub == "delete":
+                plan_id = parts[2] if len(parts) > 2 else ""
+                if not plan_id:
+                    console.print("[red]用法: /plan delete <id>[/red]")
+                    continue
+                ok = plan_manager.delete_plan(plan_id)
+                if ok:
+                    console.print("[green]✓ 计划已删除[/green]")
+                else:
+                    console.print(f"[red]计划不存在: {plan_id}[/red]")
+                continue
+
+            else:
+                _show_plan_help()
+                continue
+
+        elif inp == "/plans":
+            plans = plan_manager.list_plans()
+            console.print(Panel(Markdown(plan_manager.to_display_list(plans)), title="计划列表"))
+            continue
+
+        elif inp.startswith("/execute"):
+            parts = inp.split(maxsplit=2)
+            if len(parts) >= 2:
+                sub = parts[1]
+                if sub == "continue":
+                    # 找最近未完成的计划
+                    plans = plan_manager.list_plans()
+                    running = [p for p in plans if p.status in ("running", "draft", "ready")]
+                    done = [p for p in plans if p.status == "done"]
+                    if running:
+                        plan_id = running[0].id
+                    elif done:
+                        console.print("[dim]所有计划已完成[/dim]")
+                        continue
+                    else:
+                        console.print("[dim]暂无计划[/dim]")
+                        continue
+                    if executor is None:
+                        executor = ExecuteModeAgent(llm, tools)
+                    with console.status("[bold green]执行计划中..."):
+                        result = executor.continue_plan(plan_id)
+                    console.print()
+                    console.print(Panel(Markdown(result), title="执行结果"))
+                    console.print()
+                    continue
+
+                else:
+                    plan_id = sub
+                    if executor is None:
+                        executor = ExecuteModeAgent(llm, tools)
+                    with console.status("[bold green]执行计划中..."):
+                        result = executor.execute_plan(plan_id)
+                    console.print()
+                    console.print(Panel(Markdown(result), title="执行结果"))
+                    console.print()
+                    continue
+            else:
+                plans = plan_manager.list_plans()
+                ready = [p for p in plans if p.status in ("ready", "draft")]
+                if ready:
+                    console.print(Panel(Markdown(plan_manager.to_display_list(ready)), title="可选计划"))
+                    console.print("[dim]输入 /execute <id> 执行指定计划[/dim]")
+                else:
+                    console.print("[dim]没有可执行的计划，先用 /plan new 创建[/dim]")
+                continue
+
+        elif not inp:
             continue
 
         with console.status("[bold green]思考中..."):
-            result = agent.run(user_input)
+            result = agent.run(inp)
 
         output = result.get("output", "无输出")
         console.print()
@@ -389,8 +530,14 @@ def init() -> None:
 
     init_db()
     init_rag_db()
+
+    # 初始化 Planning 表
+    from src.planning.manager import PlanManager
+    PlanManager().init_db()
+
     console.print("[green]✓ 主数据库已初始化[/green]")
     console.print("[green]✓ RAG 知识库已初始化[/green]")
+    console.print("[green]✓ 计划系统已初始化[/green]")
     console.print("[green]✓ 配置已加载[/green]")
 
     # 创建必要目录
@@ -398,12 +545,26 @@ def init() -> None:
     data_dir.mkdir(exist_ok=True)
     (data_dir / "logs").mkdir(exist_ok=True)
     (data_dir / "notes").mkdir(exist_ok=True)
+    (data_dir / "plans").mkdir(exist_ok=True)
     console.print("[green]✓ 工作目录已创建[/green]")
 
 
 def _show_help() -> None:
     help_text = """
-**可用命令:**
+**模式命令:**
+- `/plan` — 切换到计划模式（只读）
+- `/execute` — 切换到执行模式
+- `/mode` — 查看当前模式
+
+**计划命令:**
+- `/plan new <描述>` — 创建新计划
+- `/plan show [id]` — 查看计划详情
+- `/plan delete <id>` — 删除计划
+- `/plans` — 列出所有计划
+- `/execute <id>` — 执行指定计划
+- `/execute continue` — 继续上次未完成的计划
+
+**其他命令:**
 - `/exit` — 退出对话
 - `/help` — 显示此帮助
 - `/models` — 列出可用模型
@@ -435,12 +596,25 @@ def _list_tools(tools) -> None:
     table = Table(title="可用工具")
     table.add_column("工具名", style="cyan")
     table.add_column("类别", style="green")
+    table.add_column("只读", style="yellow")
     table.add_column("描述")
 
     for t in tools:
-        table.add_row(t.name, t.category, t.description[:80])
+        readonly = "✓" if getattr(t, "is_readonly", True) else "✗"
+        table.add_row(t.name, t.category, readonly, t.description[:70])
 
     console.print(table)
+
+
+def _show_plan_help() -> None:
+    text = """
+**计划命令:**
+- `/plan new <描述>` — 创建新计划
+- `/plan show [id]` — 查看计划详情
+- `/plan delete <id>` — 删除计划
+- `/plans` — 列出所有计划
+"""
+    console.print(Panel(Markdown(text), title="Plan 命令"))
 
 
 def main() -> None:

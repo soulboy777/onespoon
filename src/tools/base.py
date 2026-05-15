@@ -17,6 +17,7 @@ class BaseTool(LangChainBaseTool, ABC):
 
     category: str = "general"
     requires_confirmation: bool = False
+    is_readonly: bool = True    # Plan Mode 只允许只读工具
 
     @abstractmethod
     def _run(self, **kwargs) -> str:

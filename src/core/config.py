@@ -67,6 +67,13 @@ class StorageConfig(BaseModel):
     chroma_persist_dir: str = "data/chroma"
 
 
+class PlanningConfig(BaseModel):
+    plans_dir: str = "data/plans"
+    template_path: str = "config/plan-template.md"
+    auto_save: bool = True
+    max_steps_per_plan: int = 20
+
+
 class LoggingConfig(BaseModel):
     level: str = "INFO"
     file: str = "data/logs/agent.log"
@@ -82,6 +89,7 @@ class AppConfig(BaseSettings):
     memory: MemoryConfig = Field(default_factory=MemoryConfig)
     compression: CompressionConfig = Field(default_factory=CompressionConfig)
     rag: RagConfig = Field(default_factory=RagConfig)
+    planning: PlanningConfig = Field(default_factory=PlanningConfig)
     classifier: ClassifierConfig = Field(default_factory=ClassifierConfig)
     scheduler: SchedulerConfig = Field(default_factory=SchedulerConfig)
     storage: StorageConfig = Field(default_factory=StorageConfig)

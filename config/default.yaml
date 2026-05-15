@@ -59,6 +59,13 @@ scheduler:
   enabled: false                    # Phase 3 启用
   max_reminders: 50
 
+# Planning
+planning:
+  plans_dir: "data/plans"
+  template_path: "config/plan-template.md"
+  auto_save: true
+  max_steps_per_plan: 20
+
 # Storage
 storage:
   database_url: "sqlite:///data/agent.db"

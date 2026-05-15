@@ -18,6 +18,7 @@ class NoteTool(BaseTool):
     description: str = "创建笔记/文档。参数: title (标题), content (内容), folder (文件夹)"
     args_schema: type[BaseModel] = CreateNoteInput
     category: str = "productivity"
+    is_readonly: bool = False
 
     def _run(self, title: str, content: str, folder: str = "notes") -> str:
         try:

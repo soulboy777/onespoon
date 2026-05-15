@@ -57,6 +57,7 @@ class WriteFileTool(BaseTool):
     description: str = "写入文件。参数: file_path (文件路径), content (内容), encoding (编码)"
     args_schema: type[BaseModel] = WriteFileInput
     category: str = "file"
+    is_readonly: bool = False
 
     def _run(self, file_path: str, content: str, encoding: str = "utf-8") -> str:
         try:
@@ -93,6 +94,7 @@ class MoveFileTool(BaseTool):
     description: str = "移动/重命名文件。参数: source (源路径), destination (目标路径)"
     args_schema: type[BaseModel] = MoveFileInput
     category: str = "file"
+    is_readonly: bool = False
 
     def _run(self, source: str, destination: str) -> str:
         try:
@@ -112,6 +114,7 @@ class DeleteFileTool(BaseTool):
     description: str = "删除文件。参数: file_path (文件路径)"
     args_schema: type[BaseModel] = DeleteFileInput
     category: str = "file"
+    is_readonly: bool = False
 
     def _run(self, file_path: str) -> str:
         try:

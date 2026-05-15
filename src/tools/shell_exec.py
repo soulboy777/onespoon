@@ -22,6 +22,7 @@ class ShellExecTool(BaseTool):
     )
     args_schema: type[BaseModel] = ShellInput
     category: str = "system"
+    is_readonly: bool = False
 
     SAFE_PREFIXES = [
         "dir", "ls", "cat", "type", "echo", "wc",

@@ -63,20 +63,55 @@ Question: {input}
 class Agent:
     """ReAct Agent — 核心智能体引擎"""
 
+    MODE_PLAN = "plan"
+    MODE_EXECUTE = "execute"
+
     def __init__(
         self,
         llm: BaseChatModel,
         tools: List[BaseTool],
         memory_manager: Optional[MemoryManager] = None,
         compressor: Optional[ContextCompressor] = None,
+        mode: str = "execute",
     ) -> None:
         self._config = get_config()
         self._llm = llm
-        self._tools = tools
+        self._all_tools = tools
+        self._mode = mode
         self._memory = memory_manager or MemoryManager()
         self._compressor = compressor or ContextCompressor(llm)
 
         self._tool_map = {t.name: t for t in tools}
+        self._update_executor()
+
+    @property
+    def mode(self) -> str:
+        return self._mode
+
+    @property
+    def tools(self) -> List[BaseTool]:
+        return self._all_tools
+
+    @property
+    def active_tools(self) -> List[BaseTool]:
+        """当前模式下的可用工具"""
+        if self._mode == self.MODE_PLAN:
+            return [t for t in self._all_tools if getattr(t, "is_readonly", True)]
+        return self._all_tools
+
+    def set_mode(self, mode: str) -> str:
+        """切换模式"""
+        if mode not in (self.MODE_PLAN, self.MODE_EXECUTE):
+            raise ValueError(f"无效模式: {mode}，可选 plan / execute")
+        self._mode = mode
+        self._update_executor()
+        readonly_count = len([t for t in self._all_tools if getattr(t, "is_readonly", True)])
+        total = len(self._all_tools)
+        logger.info(f"Agent 模式切换: {mode} ({readonly_count}/{total} 只读工具)")
+        return self._mode
+
+    def _update_executor(self) -> None:
+        active = self.active_tools
 
         self._prompt = ChatPromptTemplate.from_messages(
             [
@@ -89,13 +124,13 @@ class Agent:
 
         self._agent = create_react_agent(
             llm=self._llm,
-            tools=self._tools,
+            tools=active,
             prompt=self._prompt,
         )
 
         self._executor = AgentExecutor(
             agent=self._agent,
-            tools=self._tools,
+            tools=active,
             verbose=self._config.agent.verbose,
             max_iterations=self._config.agent.max_iterations,
             handle_parsing_errors=True,
@@ -104,7 +139,7 @@ class Agent:
 
     @property
     def tools(self) -> List[BaseTool]:
-        return self._tools
+        return self._all_tools
 
     @property
     def memory(self) -> MemoryManager:
@@ -112,7 +147,7 @@ class Agent:
 
     def run(self, user_input: str, session_id: Optional[str] = None) -> Dict[str, Any]:
         """执行一次 Agent 对话"""
-        logger.info(f"Agent 收到输入: {user_input[:100]}...")
+        logger.info(f"Agent [{self._mode}] 收到输入: {user_input[:100]}...")
 
         # 1. 获取语义记忆
         semantic_memories = self._memory.retrieve_semantic(user_input)
@@ -124,8 +159,9 @@ class Agent:
         )
 
         # 3. 压缩上下文
-        tool_names = ", ".join([t.name for t in self._tools])
-        tools_desc = "\n".join([f"- {t.name}: {t.description}" for t in self._tools])
+        active_tools = self.active_tools
+        tool_names = ", ".join([t.name for t in active_tools])
+        tools_desc = "\n".join([f"- {t.name}: {t.description}" for t in active_tools])
 
         system_content = SYSTEM_TEMPLATE.format(
             agent_name=self._config.agent.name,

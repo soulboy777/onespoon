@@ -146,6 +146,44 @@ agent-dev kb delete --name tech_docs
 - 顺序/并行执行
 - Phase 3 接入 LLM 智能拆解
 
+### 10. Plan/Execute 双模式
+
+参考 opencode 计划模式的 Plan/Build 双模式设计：
+
+**Plan Mode（计划模式）：**
+- Agent 只能使用只读工具（读取文件、搜索、记忆查询）
+- 生成结构化计划（标题、描述、步骤、依赖）
+- 计划存储：Markdown 文件 + SQLite 索引
+- 支持计划修改和迭代
+
+**Execute Mode（执行模式）：**
+- Agent 可使用全部工具
+- 按计划步骤逐步执行
+- 实时更新步骤状态（pending → running → done/failed）
+- 支持失败恢复和继续执行
+
+**CLI 命令：**
+```
+/plan              # 切换到计划模式
+/execute           # 切换到执行模式
+/plan new <描述>    # 创建新计划
+/plan show [id]    # 查看计划
+/plan delete <id>  # 删除计划
+/plans             # 列出所有计划
+/execute <id>      # 执行指定计划
+/execute continue  # 继续未完成计划
+```
+
+**工具读写标记：**
+| 工具 | Plan | Execute |
+|------|:----:|:-------:|
+| read_file, list_dir, web_search, query_memory | ✓ | ✓ |
+| search_knowledge, list_knowledge_bases | ✓ | ✓ |
+| write_file, delete_file, move_file | ✗ | ✓ |
+| shell_exec, create_note | ✗ | ✓ |
+
+**计划模板：** `config/plan-template.md`（自动生成 `data/plans/` 下的计划文件）
+
 ---
 
 ## 三、项目结构
@@ -184,6 +222,13 @@ agent开发/
 │   │   ├── memory_tool.py    # 记忆查询
 │   │   ├── rag_tool.py       # RAG 检索
 │   │   └── registry.py       # 注册入口
+│   │
+│   ├── planning/               # ★Plan/Execute 双模式
+│   │   ├── models.py           # Plan + PlanStep ORM
+│   │   ├── manager.py          # 计划 CRUD + Markdown I/O
+│   │   ├── template.py         # 计划模板渲染
+│   │   ├── planner.py          # Plan Mode Agent (只读工具)
+│   │   └── executor.py         # Execute Mode Agent (逐步执行)
 │   │
 │   ├── rag/                    # ★RAG 知识库
 │   │   ├── database.py         # 独立 SQLite (knowledge.db)
@@ -307,6 +352,7 @@ agent开发/
 - [x] 日程调度器
 - [x] 错误追踪
 - [x] 工作流引擎
+- [x] Plan/Execute 双模式
 
 ### Phase 2：交互扩展
 
@@ -342,12 +388,19 @@ set DASHSCOPE_API_KEY=sk-xxx
 python -m src.main chat
 
 # 5. RAG 知识库
-python -m src.main init                         # 初始化（含 RAG）
+python -m src.main init                         # 初始化（含 RAG + Plans）
 python -m src.main kb create -n tech_docs       # 创建知识库
 python -m src.main kb ingest -k tech_docs -p ./docs/ -r  # 导入文档
 python -m src.main kb search -k tech_docs -q "Python"     # 搜索
 
-# 6. 文件分类
+# 6. Plan/Execute
+python -m src.main chat                         # 启动对话
+/plan                                           # 切换计划模式
+/plan new 实现用户登录功能                        # 创建计划
+/plans                                          # 查看计划列表
+/execute 1                                      # 执行计划 #1
+
+# 7. 文件分类
 python -m src.main classify ./my-files
 
 # 7. 添加提醒
