@@ -84,6 +84,17 @@ def chat(
         if inp == "/exit":
             console.print("再见！")
             break
+        elif inp == "/desktop":
+            console.print("[bold cyan]正在启动桌面 UI...[/bold cyan]")
+            try:
+                from src.ui.main_window import main as ui_main
+                ui_main()
+            except ImportError as e:
+                console.print(f"[red]PySide6 未安装或 QML 加载失败: {e}[/red]")
+                console.print("[dim]请运行: pip install PySide6[/dim]")
+            except Exception as e:
+                console.print(f"[red]UI 启动失败: {e}[/red]")
+            continue
         elif inp == "/help":
             _show_help()
             continue

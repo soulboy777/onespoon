@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/icons/tray.png</file>
+        <file>resources/icons/settings.png</file>
+        <file>resources/icons/about.png</file>
+        <file>resources/character/idle.png</file>
+        <file>resources/character/thinking.png</file>
+        <file>resources/character/happy.png</file>
+        <file>resources/character/busy.png</file>
+    </qresource>
+</RCC>

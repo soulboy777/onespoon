@@ -9,4 +9,4 @@ GitHub Issues (gh CLI). See `docs/agents/issue-tracker.md`.
 Default label vocabulary. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
-Multi-context: `agent-engine` (root) + `rag` (src/rag/) + `compression` (src/compression/) + `planning` (src/planning/). See `docs/agents/domain.md`.
+Multi-context: `agent-engine` (root) + `rag` (src/rag/) + `compression` (src/compression/) + `planning` (src/planning/) + `ui` (src/ui/). See `docs/agents/domain.md`.

@@ -230,6 +230,16 @@ agent开发/
 │   │   ├── planner.py          # Plan Mode Agent (只读工具)
 │   │   └── executor.py         # Execute Mode Agent (逐步执行)
 │   │
+│   ├── ui/                     # ★ 桌面 UI
+│   │   ├── main_window.py      # QML 启动器 + 托盘 + 热键
+│   │   ├── backend.py          # UI ↔ Agent 桥接层
+│   │   ├── config_manager.py   # 用户配置管理
+│   │   ├── user_config.py      # UserConfig 模型
+│   │   ├── version.py          # 版本常量
+│   │   ├── theme.py            # 主题色彩
+│   │   ├── qml/                # QML 组件 (15 个文件)
+│   │   └── resources/          # 角色立绘/图标/字体
+│   │
 │   ├── rag/                    # ★RAG 知识库
 │   │   ├── database.py         # 独立 SQLite (knowledge.db)
 │   │   ├── models.py           # KnowledgeBase/Document/Chunk/Bm25Index
@@ -353,6 +363,7 @@ agent开发/
 - [x] 错误追踪
 - [x] 工作流引擎
 - [x] Plan/Execute 双模式
+- [x] QML 桌面 UI (悬浮窗 + 角色 + 设置 + 关于)
 
 ### Phase 2：交互扩展
 
