@@ -12,10 +12,11 @@ Item {
         "text_secondary": "#a0a0b0"
     })
 
-    // 角色主体 (PNG)
+    // 角色主体 (PNG) — 顶部对齐
     Image {
         id: charImage
-        anchors.centerIn: parent
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
         width: 140
         height: 280
         fillMode: Image.PreserveAspectFit
@@ -51,7 +52,7 @@ Item {
     Behavior on currentImage {
         SequentialAnimation {
             NumberAnimation { target: charImage; property: "opacity"; to: 0; duration: 150 }
-            PropertyAction  { target: charImage; property: "source"; value: currentImage }
+            PropertyAction { target: charImage; property: "source"; value: currentImage }
             NumberAnimation { target: charImage; property: "opacity"; to: 1; duration: 150 }
         }
     }
@@ -70,7 +71,7 @@ Item {
         NumberAnimation { target: charImage; property: "scale"; to: 1; duration: 120 }
     }
 
-    // 底部标签
+    // 底部状态标签
     Text {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter

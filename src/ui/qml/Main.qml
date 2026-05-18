@@ -16,7 +16,7 @@ Window {
     property string characterState: "idle"
     property bool responseVisible: false
     property string responseText: ""
-    
+
     property var theme: ({
         "bg_primary": "#1a1a2e",
         "bg_secondary": "#16213e",
@@ -55,7 +55,6 @@ Window {
         border.color: theme.border_color
         border.width: 1
 
-        // ---- 透明模糊背景 ----
         layer.enabled: true
         layer.effect: MultiEffect {
             blurEnabled: true
@@ -64,41 +63,91 @@ Window {
         }
     }
 
-    // ---- 布局 ----
-    RowLayout {
+    // ═══════════════════════════════════
+    //  Layout C: 上下分区
+    // ═══════════════════════════════════
+    ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
-        spacing: 12
+        anchors.margins: 12
+        spacing: 8
 
-        // 左侧：角色
-        Item {
-            Layout.preferredWidth: 160
+        // ---- 上半部分：角色 + 响应 ----
+        RowLayout {
+            Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: true
+            spacing: 12
 
-            CharacterWidget {
-                anchors.centerIn: parent
-                charState: mainWindow.characterState
+            // 左侧：角色
+            Item {
+                Layout.preferredWidth: 160
+                Layout.fillHeight: true
+
+                CharacterWidget {
+                    anchors.top: parent.top
+                    anchors.topMargin: 6
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    charState: mainWindow.characterState
+                }
+            }
+
+            // 右侧：响应区
+            ResponsePanel {
+                id: responsePanel
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                visible: mainWindow.responseVisible || true
+                textContent: mainWindow.responseText
             }
         }
 
-        // 右侧：搜索 + 响应
-        ColumnLayout {
+        // ---- 下半部分：底部操作栏 ----
+        Rectangle {
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            spacing: 10
+            Layout.preferredHeight: 56
+            radius: 12
+            color: theme.bg_secondary
 
-            // 顶部按钮行
             RowLayout {
-                Layout.fillWidth: true
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
                 spacing: 8
 
-                Item { Layout.fillWidth: true }
-
-                ModeIndicator {
-                    mode: mainWindow.currentMode
+                // 模式切换
+                ModeButton {
+                    text: "PLAN"
+                    active: mainWindow.currentMode === "plan"
+                    color: theme.plan_color
+                    onClicked: {
+                        mainWindow.currentMode = "plan"
+                        uiBackend.toggleMode()
+                    }
                 }
 
+                ModeButton {
+                    text: "EXEC"
+                    active: mainWindow.currentMode === "execute"
+                    color: theme.exec_color
+                    onClicked: {
+                        mainWindow.currentMode = "execute"
+                        uiBackend.toggleMode()
+                    }
+                }
+
+                // 输入框 (填充)
+                SearchBar {
+                    id: searchBar
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 38
+                    onSubmit: function(text) {
+                        mainWindow.characterState = "thinking"
+                        mainWindow.responseVisible = true
+                        mainWindow.responseText = "思考中..."
+                        uiBackend.submitInput(text)
+                    }
+                }
+
+                // 操作按钮
                 IconButton {
                     iconText: "⚙"
                     tooltip: "设置"
@@ -122,65 +171,6 @@ Window {
                     tooltip: "退出"
                     color: theme.highlight
                     onClicked: Qt.quit()
-                }
-            }
-
-            // 搜索框
-            SearchBar {
-                id: searchBar
-                Layout.fillWidth: true
-                Layout.preferredHeight: 44
-                onSubmit: function(text) {
-                    mainWindow.characterState = "thinking"
-                    mainWindow.responseVisible = true
-                    mainWindow.responseText = "思考中..."
-                    uiBackend.submitInput(text)
-                }
-            }
-
-            // 响应面板
-            ResponsePanel {
-                id: responsePanel
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                visible: mainWindow.responseVisible
-                textContent: mainWindow.responseText
-
-                Behavior on Layout.preferredHeight {
-                    NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
-                }
-            }
-
-            // 底部模式栏
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
-
-                ModeButton {
-                    text: "PLAN"
-                    active: mainWindow.currentMode === "plan"
-                    color: theme.plan_color
-                    onClicked: {
-                        mainWindow.currentMode = "plan"
-                        uiBackend.toggleMode()
-                    }
-                }
-
-                ModeButton {
-                    text: "EXEC"
-                    active: mainWindow.currentMode === "execute"
-                    color: theme.exec_color
-                    onClicked: {
-                        mainWindow.currentMode = "execute"
-                        uiBackend.toggleMode()
-                    }
-                }
-
-                Item { Layout.fillWidth: true }
-
-                SmallLabel {
-                    text: mainWindow.currentMode === "plan" ? "只读" : "完全"
-                    color: mainWindow.currentMode === "plan" ? theme.plan_color : theme.exec_color
                 }
             }
         }

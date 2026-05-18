@@ -22,8 +22,8 @@
 | Token 计数 | **tiktoken** | 精确 token 计数 |
 | 日志 | **loguru** | 结构化日志 |
 | API 服务 | **FastAPI** (Phase 2) | REST + WebSocket |
-| 桌面 UI | **PySide6 + QML** (Phase 2) | 悬浮窗 + 角色 |
-| 打包 | **PyInstaller** (Phase 3) | 独立 exe |
+| 桌面 UI | **PySide6 + QML** | 悬浮窗 + 角色动画 + 设置面板 |
+| 打包 | **PyInstaller + Inno Setup** | 独立 exe + 安装器 (开机启动) |
 
 ---
 
@@ -270,7 +270,8 @@ agent开发/
 │
 ├── config/
 │   ├── default.yaml          # 默认配置
-│   └── models.yaml           # 模型列表
+│   ├── models.yaml           # 模型列表
+│   └── plan-template.md     # 计划模板
 │
 ├── tests/
 │   ├── conftest.py
@@ -280,6 +281,15 @@ agent开发/
 │   ├── test_memory.py
 │   ├── test_compression.py
 │   └── test_classifier.py
+│
+├── agent-dev.spec            # PyInstaller 打包配置
+├── src/entry.py              # 统一入口 (CLI/GUI路由)
+├── scripts/
+│   └── build.ps1            # 一键构建脚本
+├── installer/
+│   └── setup.iss             # Inno Setup 安装脚本
+├── icon/
+│   └── agent-dev.ico         # 应用图标
 │
 ├── data/                     # 运行时数据 (gitignore)
 ├── pyproject.toml
@@ -369,16 +379,17 @@ agent开发/
 ### Phase 2：交互扩展
 
 - [ ] FastAPI REST + WebSocket 接口
-- [ ] PySide6 桌面悬浮窗
-- [ ] 二次元角色动画（QML）
 - [ ] 对话历史面板
+- [ ] 自定义分类规则 UI
 
 ### Phase 3：打磨发布
 
-- [ ] 自定义分类规则 UI
+- [x] PySide6 桌面悬浮窗 (Layout C)
+- [x] 二次元角色动画（QML）
+- [x] PyInstaller 打包
+- [x] Inno Setup 安装器 + 开机启动
 - [ ] 性能优化
-- [ ] PyInstaller 打包
-- [ ] 安装器/文档
+- [ ] 角色立绘替换
 
 ---
 
@@ -415,13 +426,16 @@ python -m src.main chat                         # 启动对话
 # 7. 文件分类
 python -m src.main classify ./my-files
 
-# 7. 添加提醒
+# 8. 添加提醒
 python -m src.main schedule -t "开会" -a "2026-05-14 15:00"
 
-# 8. 查看可用模型
+# 9. 查看可用模型
 python -m src.main models
 
-# 9. 打包为 exe
+# 10. 桌面 UI
+python -m src.ui.main_window
+
+# 11. 打包为 exe
 pip install PyInstaller
 .\scripts\build.ps1
 ```
@@ -430,6 +444,148 @@ pip install PyInstaller
 
 ## 七、UI 设计
 
+### 布局 (Layout C)
+
+```
+┌────────────────────────────────────────────────────┐
+│  ┌─────────┐  ┌──────────────────────────────────┐ │
+│  │  角色    │  │                                  │ │
+│  │ 160×280 │  │      Agent 响应 (Markdown)        │ │
+│  │  (PNG)  │  │      可滚动区域                    │ │
+│  │         │  │                                  │ │
+│  └─────────┘  └──────────────────────────────────┘ │
+│  ┌────────────────────────────────────────────────┐│
+│  │ [PLAN] [EXEC]  🔍 输入指令...      ⚙ ℹ − ×    ││
+│  └────────────────────────────────────────────────┘│
+└────────────────────────────────────────────────────┘
+  总窗口: 620 × 420 | 底部栏: 60px | 角色: 160×280
+```
+
 类似微软搜索窗，输入框常驻桌面，可输入任何内容和指令，同时有二次元角色挂在一旁。
 
 （UI 具体设计由画师神启小白负责）
+
+---
+
+## 八、从画到 UI 配置 — 完整流程
+
+### 1. 画师交付物
+
+| 文件名 | 用途 | 说明 |
+|--------|------|------|
+| `idle.png` | 待机表情 | 角色平常的样子 |
+| `thinking.png` | 思考中 | 用户输入后、等待回答时 |
+| `happy.png` | 完成 | 回答成功后短暂显示 |
+| `busy.png` | 忙碌/错误 | 执行出错时 |
+
+**规格要求：**
+- 格式：PNG (RGBA, 透明背景)
+- 角色本体占 140×280 像素区域（QML 会自动 PreserveAspectFit 缩放）
+- 建议画布：宽 300px，高 500px（给角色留呼吸空间）
+- 所有表情用**同一画布尺寸**，避免切换时跳变
+
+### 2. 图片放置
+
+```
+src/ui/resources/character/
+├── idle.png          ← 把画师给的图改名为此 4 个文件名
+├── thinking.png
+├── happy.png
+└── busy.png
+```
+
+QML 引用路径已写死：`"resources/character/" + charState + ".png"`
+当后端发信号 `characterState = "thinking"` → 自动显示 `thinking.png`。
+
+### 3. 角色状态机
+
+```
+idle ──(用户输入)──→ thinking ──(回答完成)──→ happy ──(4s后)──→ idle
+ │                     │
+ └──(超时)──→ idle      └──(出错)──→ busy ──(4s后)──→ idle
+```
+
+### 4. 调整角色位置/大小
+
+| 想改的 | 文件 | 参数 |
+|--------|------|------|
+| 角色容器总大小 | `CharacterWidget.qml` | `width: 150` `height: 300` |
+| 角色图片显示大小 | `CharacterWidget.qml` | Image `width: 140` `height: 280` |
+| 角色缩放模式 | `CharacterWidget.qml` | Image `fillMode: Image.PreserveAspectFit` |
+| 角色水平位置 | `Main.qml` | 角色 Item `anchors.horizontalCenter` |
+| 角色垂直位置 | `Main.qml` | 角色 Item `anchors.top` `anchors.topMargin` |
+| 角色呼吸速度 | `CharacterWidget.qml` | Opacity动画 `duration: 1500` |
+| 角色眨眼频率 | `CharacterWidget.qml` | Timer `interval: 4000` |
+| 表情切换速度 | `CharacterWidget.qml` | Opacity动画 `duration: 150` |
+
+### 5. 调整窗口和布局
+
+| 想改的 | 文件 | 参数 |
+|--------|------|------|
+| 窗口总大小 | `Main.qml` | `width: 620` `height: 420` |
+| 窗口默认位置 | `main_window.py` | `setPosition(x, y)` |
+| 窗口圆角 | `Main.qml` | Rectangle `radius: 16` |
+| 窗口透明度 | `Main.qml` | Rectangle `opacity: 0.92` |
+| 底部栏高度 | `Main.qml` | 底部 Rectangle `Layout.preferredHeight: 56` |
+| 底部栏色彩 | `Main.qml` | 底部 Rectangle `color: theme.bg_secondary` |
+| 搜索框高度 | `Main.qml` | SearchBar `Layout.preferredHeight: 38` |
+| 呼入动画速度 | `Main.qml` | Opacity动画 `duration: 200` |
+| 快捷键 | `Main.qml` | Shortcut `sequence: "Alt+Space"` |
+
+### 6. 调整色彩主题
+
+所有颜色集中在 `src/ui/theme.py`，改一次全局生效：
+
+```python
+THEMES = {
+    "dark": {
+        "bg_primary": "#1a1a2e",     # 窗口主背景
+        "bg_secondary": "#16213e",   # 面板/底部栏背景
+        "text_primary": "#eeeeee",   # 主文字色
+        "text_secondary": "#a0a0b0", # 次要文字色
+        "glow_color": "#7c4dff",     # 输入框发光色
+        "highlight": "#e94560",      # 强调色（关闭按钮等）
+        "plan_color": "#4fc3f7",     # Plan 模式蓝
+        "exec_color": "#66bb6a",     # Execute 模式绿
+        "border_color": "#2a2a4e",   # 边框色
+    },
+    "light": { ... }
+}
+```
+
+### 7. 调整设置面板
+
+设置面板在 `SettingsWindow.qml` 中，7 个 Tab：
+
+| Tab | 配置项来源 |
+|-----|-----------|
+| LLM | `user_config.py` → `UserLLMConfig` |
+| API | `user_config.py` → `ApiKeyConfig` (密码框 + 👁 切换) |
+| 嵌入 | `user_config.py` → `UserRagConfig` |
+| RAG | `user_config.py` → `UserRagConfig` |
+| 记忆 | `user_config.py` → `UserMemoryConfig` |
+| 界面 | `user_config.py` → `UIConfig` |
+
+保存时 → `config/user.yaml` + 环境变量注入。
+
+### 8. 测试 UI
+
+```bash
+# 开发时直接运行（改 QML 后重新运行即生效，无需编译）
+python -m src.ui.main_window
+
+# 如果 QML 有问题，控制台会打印具体错误行号
+# QML 模块缺失时: pip install PySide6
+```
+
+### 9. 关于面板信息
+
+`src/ui/version.py` 中修改：
+
+```python
+VERSION = "0.2.0"
+BUILD_DATE = "2026-05-17"
+AUTHOR = "soulboy777"
+ARTIST = "神启小白"
+REPO_URL = "https://github.com/soulboy777/onespoon"
+```
