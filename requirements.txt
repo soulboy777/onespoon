@@ -48,3 +48,7 @@ loguru>=0.7.0
 # Testing
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
+
+# Build (PyInstaller 打包)
+PyInstaller>=6.0.0
+

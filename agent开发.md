@@ -364,6 +364,7 @@ agent开发/
 - [x] 工作流引擎
 - [x] Plan/Execute 双模式
 - [x] QML 桌面 UI (悬浮窗 + 角色 + 设置 + 关于)
+- [x] PyInstaller 打包配置 + Inno Setup 安装器
 
 ### Phase 2：交互扩展
 
@@ -419,6 +420,10 @@ python -m src.main schedule -t "开会" -a "2026-05-14 15:00"
 
 # 8. 查看可用模型
 python -m src.main models
+
+# 9. 打包为 exe
+pip install PyInstaller
+.\scripts\build.ps1
 ```
 
 ---

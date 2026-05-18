@@ -40,3 +40,5 @@ Thumbs.db
 *.exe
 *.msi
 *.app
+installer/dist/
+*.spec.bak
