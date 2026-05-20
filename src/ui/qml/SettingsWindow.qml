@@ -41,7 +41,8 @@ Rectangle {
     property int autoHide: 0
     property string hotkey: "Alt+Space"
     property bool charVisible: true
-    property string charPosition: "left"
+    property string charPosition: "right"
+    property string uiLayout: "sleep"
 
     // 密钥可见性
     property bool keyVisible: false
@@ -144,6 +145,7 @@ Rectangle {
                 SettingRow { label: "快捷键"; value: hotkey; edit: true }
                 SettingRow { label: "角色显示"; value: charVisible; type: "toggle" }
                 SettingRow { label: "角色位置"; value: charPosition; combo: true; comboOptions: ["left", "right"] }
+                SettingRow { label: "布局"; value: uiLayout; combo: true; comboOptions: ["sleep", "classic"] }
             }
         }
 
@@ -173,7 +175,8 @@ Rectangle {
                         rag_top_k: ragTopK, hybrid_alpha: hybridAlpha,
                         buffer_tokens: bufferTokens, semantic_top_k: semanticTopK,
                         theme: uiTheme, font_size: fontSize, auto_hide: autoHide, hotkey: hotkey,
-                        char_visible: charVisible, char_position: charPosition
+                        char_visible: charVisible, char_position: charPosition,
+                        ui_layout: uiLayout
                     })
                     onSaved()
                 }

@@ -7,5 +7,6 @@
         <file>resources/character/thinking.png</file>
         <file>resources/character/happy.png</file>
         <file>resources/character/busy.png</file>
+        <file>resources/character/sleeping.png</file>
     </qresource>
 </RCC>

@@ -36,6 +36,7 @@ class UIBackend(QObject):
         self._memory = None
         self._initialized = False
         self._user_config = None
+        self._desktop_app = None
 
         self._init_backend()
 
@@ -110,6 +111,12 @@ class UIBackend(QObject):
         new = "plan" if current == "execute" else "execute"
         self._agent.set_mode(new)
         self.modeChanged.emit(new)
+
+    @Slot(str)
+    def switchLayout(self, layout: str):
+        """切换界面布局 sleep ↔ classic"""
+        if self._desktop_app and hasattr(self._desktop_app, "switch_layout"):
+            self._desktop_app.switch_layout(layout)
 
     @Slot(str)
     def executePlan(self, plan_id: str):
@@ -190,6 +197,7 @@ class UIBackend(QObject):
             "hotkey": uc.ui.hotkey,
             "char_visible": uc.ui.character_visible,
             "char_position": uc.ui.character_position,
+            "ui_layout": uc.ui.layout,
         }
 
     @Slot("QVariantMap")
@@ -229,7 +237,8 @@ class UIBackend(QObject):
             auto_hide_seconds=int(settings.get("auto_hide", 0)),
             hotkey=str(settings.get("hotkey", "Alt+Space")),
             character_visible=bool(settings.get("char_visible", True)),
-            character_position=str(settings.get("char_position", "left")),
+            character_position=str(settings.get("char_position", "right")),
+            layout=str(settings.get("ui_layout", "sleep")),
         )
 
         save_user_config(uc)

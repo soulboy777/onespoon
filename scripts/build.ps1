@@ -65,8 +65,9 @@ ui:
   auto_hide_seconds: 0
   hotkey: Alt+Space
   character_visible: true
-  character_position: left
+  character_position: right
   auto_start: true
+  layout: sleep
 
 api_keys:
   openai_api_key: ""

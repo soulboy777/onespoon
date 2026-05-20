@@ -11,8 +11,9 @@ class UIConfig(BaseModel):
     auto_hide_seconds: int = 0
     hotkey: str = "Alt+Space"
     character_visible: bool = True
-    character_position: str = "left"
+    character_position: str = "right"
     auto_start: bool = False
+    layout: str = "sleep"
 
 
 class ApiKeyConfig(BaseModel):
