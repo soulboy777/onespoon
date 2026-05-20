@@ -20,6 +20,8 @@ class UIBackend(QObject):
 
     # ---- Signals → QML ----
     responseReady = Signal(str)
+    mainReady = Signal(str)
+    subReady = Signal(str)
     modeChanged = Signal(str)
     stepUpdated = Signal(int, str)
     characterStateChanged = Signal(str)
@@ -93,7 +95,11 @@ class UIBackend(QObject):
         try:
             result = self._agent.run(text)
             output = result.get("output", "无输出")
+            main_text = result.get("main", output)
+            sub_text = result.get("sub", "")
             self.responseReady.emit(output)
+            self.mainReady.emit(main_text)
+            self.subReady.emit(sub_text)
             self.characterStateChanged.emit("happy")
         except Exception as e:
             self.responseReady.emit(f"❌ 错误: {e}")

@@ -20,18 +20,22 @@ class NoteTool(BaseTool):
     category: str = "productivity"
     is_readonly: bool = False
 
-    def _run(self, title: str, content: str, folder: str = "notes") -> str:
-        try:
-            note_dir = Path(folder)
-            note_dir.mkdir(parents=True, exist_ok=True)
+    def _execute(self, title: str, content: str, folder: str = "notes") -> dict:
+        from datetime import datetime
 
-            safe_title = "".join(c for c in title if c.isalnum() or c in " _-()（）")
-            file_path = note_dir / f"{safe_title}.md"
+        note_dir = Path(folder)
+        note_dir.mkdir(parents=True, exist_ok=True)
 
-            timestamp = __import__("datetime").datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            full_content = f"# {title}\n\n> 创建时间: {timestamp}\n\n{content}\n"
+        safe_title = "".join(c for c in title if c.isalnum() or c in " _-()（）")
+        file_path = note_dir / f"{safe_title}.md"
 
-            file_path.write_text(full_content, encoding="utf-8")
-            return f"笔记已创建: {file_path}"
-        except Exception as e:
-            return f"创建笔记失败: {e}"
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        full_content = f"# {title}\n\n> 创建时间: {timestamp}\n\n{content}\n"
+        file_path.write_text(full_content, encoding="utf-8")
+
+        return {
+            "data": f"笔记已创建: {file_path}",
+            "file": str(file_path),
+            "action": "create_note",
+            "title": title,
+        }

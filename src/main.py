@@ -242,8 +242,16 @@ def chat(
             result = agent.run(inp)
 
         output = result.get("output", "无输出")
+        main_text = result.get("main", "")
+        sub_text = result.get("sub", "")
+
         console.print()
-        console.print(Panel(Markdown(output), title="Agent"))
+        if main_text:
+            console.print(Panel(Markdown(main_text), title="Agent", border_style="cyan"))
+        if sub_text:
+            console.print(Panel(Markdown(f"_{sub_text}_"), border_style="dim", padding=(0, 2)))
+        if not main_text and not sub_text:
+            console.print(Panel(Markdown(output), title="Agent"))
         console.print()
 
 

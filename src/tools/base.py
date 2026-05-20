@@ -1,7 +1,9 @@
-"""工具基类 — LangChain BaseTool 封装"""
+"""工具基类 — LangChain BaseTool 封装 + JSON 输出包装"""
 
+import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Type
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from langchain.tools import BaseTool as LangChainBaseTool
 from pydantic import BaseModel, Field
@@ -17,12 +19,45 @@ class BaseTool(LangChainBaseTool, ABC):
 
     category: str = "general"
     requires_confirmation: bool = False
-    is_readonly: bool = True    # Plan Mode 只允许只读工具
+    is_readonly: bool = True
 
-    @abstractmethod
     def _run(self, **kwargs) -> str:
-        """同步执行"""
-        ...
+        """LangChain 调用入口，自动包装 JSON 输出"""
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+        try:
+            result = self._execute(**kwargs)
+            if isinstance(result, dict):
+                result.setdefault("status", "success")
+                result.setdefault("timestamp", ts)
+                return json.dumps(result, ensure_ascii=False)
+            elif isinstance(result, str):
+                return json.dumps(
+                    {"status": "success", "data": result, "timestamp": ts},
+                    ensure_ascii=False,
+                )
+            else:
+                return json.dumps(
+                    {"status": "success", "data": str(result), "timestamp": ts},
+                    ensure_ascii=False,
+                )
+        except Exception as e:
+            import traceback
+
+            return json.dumps(
+                {
+                    "status": "error",
+                    "error": str(e),
+                    "traceback": traceback.format_exc(limit=2),
+                    "timestamp": ts,
+                },
+                ensure_ascii=False,
+            )
+
+    def _execute(self, **kwargs) -> Dict[str, Any]:
+        """子类覆写此方法，返回 dict"""
+        raise NotImplementedError(
+            f"Tool '{self.name}': 请覆写 _execute() 方法并返回 dict"
+        )
 
     async def _arun(self, **kwargs) -> str:
         """异步执行"""
@@ -44,34 +79,26 @@ class ToolRegistry:
         return cls._instance
 
     def register(self, tool: BaseTool) -> None:
-        """注册工具"""
         self._tools[tool.name] = tool
 
     def register_many(self, tools: List[BaseTool]) -> None:
-        """批量注册"""
         for tool in tools:
             self.register(tool)
 
     def get(self, name: str) -> Optional[BaseTool]:
-        """按名称获取工具"""
         return self._tools.get(name)
 
     def list_all(self) -> List[BaseTool]:
-        """列出所有工具"""
         return list(self._tools.values())
 
     def list_by_category(self, category: str) -> List[BaseTool]:
-        """按类别筛选"""
         return [t for t in self._tools.values() if t.category == category]
 
     def categories(self) -> List[str]:
-        """列出所有类别"""
         return list({t.category for t in self._tools.values()})
 
     def unregister(self, name: str) -> None:
-        """移除工具"""
         self._tools.pop(name, None)
 
     def clear(self) -> None:
-        """清空注册"""
         self._tools.clear()

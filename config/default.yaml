@@ -77,3 +77,13 @@ logging:
   file: "data/logs/agent.log"
   rotation: "10 MB"
   retention: "7 days"
+
+# Format
+format:
+  main_tag: "【回】"
+  sub_tag: "【细】"
+  main_font_size: 15
+  sub_font_size: 12
+  sub_color: "#808090"
+  style: "childlike"
+  tone_words: ["嘞", "嘿", "嘻", "吁"]

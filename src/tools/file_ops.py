@@ -1,8 +1,6 @@
 """文件操作工具"""
 
-import os
 from pathlib import Path
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -39,17 +37,14 @@ class ReadFileTool(BaseTool):
     args_schema: type[BaseModel] = ReadFileInput
     category: str = "file"
 
-    def _run(self, file_path: str, encoding: str = "utf-8") -> str:
+    def _execute(self, file_path: str, encoding: str = "utf-8") -> dict:
         path = Path(file_path)
         if not path.exists():
-            return f"错误: 文件不存在 — {file_path}"
-        try:
-            content = path.read_text(encoding=encoding)
-            if len(content) > 10000:
-                content = content[:10000] + "\n... (内容已截断，共 {} 字符)".format(len(content))
-            return content
-        except Exception as e:
-            return f"读取失败: {e}"
+            return {"status": "error", "error": f"文件不存在: {file_path}", "file": file_path}
+        content = path.read_text(encoding=encoding)
+        if len(content) > 10000:
+            content = content[:10000] + f"\n... (已截断，共 {len(content)} 字符)"
+        return {"data": content, "file": file_path, "action": "read", "size": len(content)}
 
 
 class WriteFileTool(BaseTool):
@@ -59,14 +54,11 @@ class WriteFileTool(BaseTool):
     category: str = "file"
     is_readonly: bool = False
 
-    def _run(self, file_path: str, content: str, encoding: str = "utf-8") -> str:
-        try:
-            path = Path(file_path)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding=encoding)
-            return f"写入成功: {file_path} ({len(content)} 字符)"
-        except Exception as e:
-            return f"写入失败: {e}"
+    def _execute(self, file_path: str, content: str, encoding: str = "utf-8") -> dict:
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding=encoding)
+        return {"data": f"写入成功: {file_path}", "file": file_path, "action": "write", "size": len(content)}
 
 
 class ListDirTool(BaseTool):
@@ -75,18 +67,15 @@ class ListDirTool(BaseTool):
     args_schema: type[BaseModel] = ListDirInput
     category: str = "file"
 
-    def _run(self, directory: str = ".") -> str:
-        try:
-            path = Path(directory)
-            if not path.exists():
-                return f"目录不存在: {directory}"
-            items = []
-            for item in sorted(path.iterdir()):
-                prefix = "📁 " if item.is_dir() else "📄 "
-                items.append(f"{prefix}{item.name}")
-            return "\n".join(items) if items else "目录为空"
-        except Exception as e:
-            return f"列出目录失败: {e}"
+    def _execute(self, directory: str = ".") -> dict:
+        path = Path(directory)
+        if not path.exists():
+            return {"status": "error", "error": f"目录不存在: {directory}", "file": directory}
+        items = []
+        for item in sorted(path.iterdir()):
+            prefix = "📁 " if item.is_dir() else "📄 "
+            items.append(f"{prefix}{item.name}")
+        return {"data": "\n".join(items) if items else "目录为空", "file": directory, "action": "list", "count": len(items)}
 
 
 class MoveFileTool(BaseTool):
@@ -96,17 +85,14 @@ class MoveFileTool(BaseTool):
     category: str = "file"
     is_readonly: bool = False
 
-    def _run(self, source: str, destination: str) -> str:
-        try:
-            src = Path(source)
-            if not src.exists():
-                return f"源文件不存在: {source}"
-            dst = Path(destination)
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            src.rename(dst)
-            return f"已移动: {source} → {destination}"
-        except Exception as e:
-            return f"移动失败: {e}"
+    def _execute(self, source: str, destination: str) -> dict:
+        src = Path(source)
+        if not src.exists():
+            return {"status": "error", "error": f"源文件不存在: {source}", "file": source}
+        dst = Path(destination)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        src.rename(dst)
+        return {"data": f"已移动: {source} → {destination}", "file": source, "dest": destination, "action": "move"}
 
 
 class DeleteFileTool(BaseTool):
@@ -116,12 +102,9 @@ class DeleteFileTool(BaseTool):
     category: str = "file"
     is_readonly: bool = False
 
-    def _run(self, file_path: str) -> str:
-        try:
-            path = Path(file_path)
-            if not path.exists():
-                return f"文件不存在: {file_path}"
-            path.unlink()
-            return f"已删除: {file_path}"
-        except Exception as e:
-            return f"删除失败: {e}"
+    def _execute(self, file_path: str) -> dict:
+        path = Path(file_path)
+        if not path.exists():
+            return {"status": "error", "error": f"文件不存在: {file_path}", "file": file_path}
+        path.unlink()
+        return {"data": f"已删除: {file_path}", "file": file_path, "action": "delete"}

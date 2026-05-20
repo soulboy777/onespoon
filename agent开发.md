@@ -184,6 +184,39 @@ agent-dev kb delete --name tech_docs
 
 **计划模板：** `config/plan-template.md`（自动生成 `data/plans/` 下的计划文件）
 
+### 11. 输入输出格式化
+
+五层格式化体系：
+
+| 层 | 名称 | 说明 |
+|----|------|------|
+| L1 | 系统提示词结构化 | JSON Schema 工具列表 + 工作流指令 + 输出格式要求 |
+| L2 | 工具输入 JSON Schema | Pydantic args_schema → JSON Schema 嵌入 prompt |
+| L3 | 工具输出 JSON 标准化 | BaseTool._run() 自动包装为 `{"status":"success","data":...,"timestamp":"..."}` |
+| L4 | Agent 输出主副句分拆 | LLM 必须输出 `【回】主句` + `【细】副句` |
+| L5 | 显示层格式化 | CLI Rich 分层 Panel / QML 双 Text(15px白+12px灰) |
+
+**主句语气要求：**
+- 活泼小朋友风格，语气词：嘞、嘿、嘻、吁（不用啦、呀、哦、呢）
+- 控制在 15 字以内
+- 示例："写好嘞！"、"找到嘿~"、"弄完了嘻"
+
+**副句格式：**
+```
+时间 | 文件路径 | 具体操作
+14:30 | src/tools/foo.py | 第19行导入 ReadFileTool
+```
+
+**数据流：**
+```
+用户输入 → Agent.run() → LLM(结构化Prompt) → 【回】+【细】输出
+  → formatter.parse_response() → {main, sub}
+  → CLI: Panel(bold cyan) + Panel(dim)
+  → QML: Text(15px #eee bold) + Text(12px #808090)
+```
+
+**配置：** `config/default.yaml` → `format:` 节
+
 ---
 
 ## 三、项目结构
@@ -379,6 +412,7 @@ agent开发/
 - [x] Plan/Execute 双模式
 - [x] QML 桌面 UI (睡觉默认布局 + 经典竖排布局)
 - [x] PyInstaller 打包配置 + Inno Setup 安装器
+- [x] LLM 输入输出五层格式化 (JSON Schema + 主副句)
 
 ### Phase 2：交互扩展
 

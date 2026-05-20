@@ -29,33 +29,19 @@ class MemoryQueryTool(BaseTool):
     def set_memory_manager(self, manager) -> None:
         self._memory_manager = manager
 
-    def _run(
-        self,
-        query: str,
-        memory_type: str = "semantic",
-        top_k: int = 5,
-    ) -> str:
+    def _execute(self, query: str, memory_type: str = "semantic", top_k: int = 5) -> dict:
         if self._memory_manager is None:
-            return "记忆系统未初始化"
+            return {"status": "error", "error": "记忆系统未初始化"}
 
         if memory_type == "semantic":
             fragments = self._memory_manager.retrieve_semantic(query, top_k=top_k)
-            if not fragments:
-                return "未找到相关语义记忆"
-            lines = ["## 语义记忆检索结果"]
-            for i, frag in enumerate(fragments, 1):
-                lines.append(f"{i}. [{frag.importance:.0%}] {frag.content[:200]}")
-            return "\n".join(lines)
+            results = [{"content": f.content[:200], "importance": f.importance} for f in fragments]
+            return {"data": results, "action": "query_memory", "type": "semantic", "count": len(results)}
 
         elif memory_type == "episodic":
             episodes = self._memory_manager.retrieve_episodic(query, top_k=top_k)
-            if not episodes:
-                return "未找到相关任务记忆"
-            lines = ["## 情景记忆检索结果"]
-            for i, ep in enumerate(episodes, 1):
-                status = "✓" if ep.success else "✗"
-                lines.append(f"{i}. [{status}] {ep.task}: {ep.lessons[:100]}")
-            return "\n".join(lines)
+            results = [{"task": e.task, "success": e.success, "lessons": e.lessons[:200]} for e in episodes]
+            return {"data": results, "action": "query_memory", "type": "episodic", "count": len(results)}
 
         else:
-            return f"未知记忆类型: {memory_type}，可选 semantic / episodic"
+            return {"status": "error", "error": f"未知记忆类型: {memory_type}"}

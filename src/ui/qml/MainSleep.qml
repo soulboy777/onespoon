@@ -16,6 +16,8 @@ Window {
     property string characterState: "idle"
     property bool responseVisible: false
     property string responseText: ""
+    property string mainText: ""
+    property string subText: ""
 
     property var theme: ({
         "bg_primary": "#1a1a2e",
@@ -106,7 +108,8 @@ Window {
                     onSubmit: function(text) {
                         mainWindow.characterState = "thinking"
                         mainWindow.responseVisible = true
-                        mainWindow.responseText = "思考中..."
+                        mainWindow.mainText = "思考中..."
+                        mainWindow.subText = ""
                         uiBackend.submitInput(text)
                     }
                 }
@@ -198,12 +201,22 @@ Window {
                     anchors.margins: 10
                     spacing: 4
 
-                    // 被子纹理标签
                     Text {
                         text: "🛌"
                         font.pixelSize: 14
                         opacity: 0.4
                     }
+
+                    ResponsePanel {
+                        id: responsePanel
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        visible: mainWindow.responseVisible || true
+                        mainContent: mainWindow.mainText
+                        subContent: mainWindow.subText
+                        clip: true
+                    }
+                }
 
                     ResponsePanel {
                         id: responsePanel
@@ -319,6 +332,16 @@ Window {
     Shortcut {
         sequence: "Esc"
         onActivated: mainWindow.visible = false
+    }
+
+    // ---- Backend 信号连接 ----
+    Connections {
+        target: uiBackend
+        function onResponseReady(text) { mainWindow.responseText = text }
+        function onMainReady(text) { mainWindow.mainText = text }
+        function onSubReady(text) { mainWindow.subText = text }
+        function onCharacterStateChanged(state) { mainWindow.characterState = state }
+        function onModeChanged(mode) { mainWindow.currentMode = mode }
     }
 
     // ---- 弹出窗口 ----

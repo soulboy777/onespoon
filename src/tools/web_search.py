@@ -1,7 +1,5 @@
 """网络搜索工具"""
 
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 from src.tools.base import BaseTool
@@ -17,9 +15,10 @@ class WebSearchTool(BaseTool):
     args_schema: type[BaseModel] = WebSearchInput
     category: str = "web"
 
-    def _run(self, query: str) -> str:
-        # Phase 1: 占位实现，Phase 2 接入真实搜索 API
-        return (
-            f"网络搜索功能待接入。查询: {query}\n"
-            "提示: 在 config 中配置 SERPAPI_API_KEY 或 TAVILY_API_KEY 后启用真实搜索。"
-        )
+    def _execute(self, query: str) -> dict:
+        return {
+            "data": f"网络搜索功能待接入。查询: {query}",
+            "query": query,
+            "action": "search",
+            "note": "配置 SERPAPI_API_KEY 或 TAVILY_API_KEY 启用",
+        }

@@ -16,6 +16,8 @@ Window {
     property string characterState: "idle"
     property bool responseVisible: false
     property string responseText: ""
+    property string mainText: ""
+    property string subText: ""
 
     property var theme: ({
         "bg_primary": "#1a1a2e",
@@ -96,7 +98,12 @@ Window {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 visible: mainWindow.responseVisible || true
-                textContent: mainWindow.responseText
+                mainContent: mainWindow.mainText
+                subContent: mainWindow.subText
+
+                Behavior on Layout.preferredHeight {
+                    NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+                }
             }
         }
 
@@ -135,17 +142,18 @@ Window {
                 }
 
                 // 输入框 (填充)
-                SearchBar {
-                    id: searchBar
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 38
-                    onSubmit: function(text) {
-                        mainWindow.characterState = "thinking"
-                        mainWindow.responseVisible = true
-                        mainWindow.responseText = "思考中..."
-                        uiBackend.submitInput(text)
-                    }
+            SearchBar {
+                id: searchBar
+                Layout.fillWidth: true
+                Layout.preferredHeight: 38
+                onSubmit: function(text) {
+                    mainWindow.characterState = "thinking"
+                    mainWindow.responseVisible = true
+                    mainWindow.mainText = "思考中..."
+                    mainWindow.subText = ""
+                    uiBackend.submitInput(text)
                 }
+            }
 
                 // 操作按钮
                 IconButton {
@@ -180,6 +188,16 @@ Window {
     SequentialAnimation on opacity {
         id: showAnimation
         NumberAnimation { from: 0; to: 0.92; duration: 200; easing.type: Easing.OutCubic }
+    }
+
+    // ---- Backend 信号连接 ----
+    Connections {
+        target: uiBackend
+        function onResponseReady(text) { mainWindow.responseText = text }
+        function onMainReady(text) { mainWindow.mainText = text }
+        function onSubReady(text) { mainWindow.subText = text }
+        function onCharacterStateChanged(state) { mainWindow.characterState = state }
+        function onModeChanged(mode) { mainWindow.currentMode = mode }
     }
 
     // ---- 快捷键 ----
