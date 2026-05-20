@@ -105,8 +105,11 @@ class DesktopApp:
         self._tray = QSystemTrayIcon()
         self._tray.setToolTip("Agent 开发助手")
 
-        icon = QApplication.style().standardIcon(QApplication.style().SP_ComputerIcon)
-        self._tray.setIcon(icon)
+        icon_path = self._get_project_root() / "icon" / "agent-dev.ico"
+        if icon_path.exists():
+            self._tray.setIcon(QIcon(str(icon_path)))
+        else:
+            self._tray.setIcon(QApplication.style().standardIcon(QApplication.style().SP_ComputerIcon))
 
         menu = QMenu()
         show_action = menu.addAction("显示/隐藏")
@@ -165,6 +168,9 @@ class DesktopApp:
         self._tray.hide()
         self._view.close()
         self._app.quit()
+
+    def _get_project_root(self):
+        return Path(__file__).resolve().parent.parent.parent
 
     def run(self):
         return self._app.exec()

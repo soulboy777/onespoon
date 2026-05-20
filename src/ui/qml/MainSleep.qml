@@ -120,7 +120,8 @@ Window {
                 Layout.preferredWidth: 190
                 Layout.fillHeight: true
 
-                Image {
+                // 动态 APNG — 呼吸/表情由画师做到图里
+                AnimatedImage {
                     id: charImage
                     anchors.top: parent.top
                     anchors.topMargin: -8
@@ -128,17 +129,11 @@ Window {
                     width: 170
                     height: 390
                     fillMode: Image.PreserveAspectFit
-                    source: characterState === "idle" ? "resources/character/sleeping.png"
-                            : "resources/character/" + characterState + ".png"
+                    source: characterState === "idle" ? "resources/characters/sleeping.apng"
+                            : "resources/characters/" + characterState + ".apng"
                     smooth: true
-                    opacity: 1
-
-                    SequentialAnimation on opacity {
-                        running: true
-                        loops: Animation.Infinite
-                        NumberAnimation { from: 0.88; to: 1.0; duration: 2200; easing.type: Easing.InOutSine }
-                        NumberAnimation { from: 1.0; to: 0.88; duration: 2200; easing.type: Easing.InOutSine }
-                    }
+                    playing: true
+                    paused: false
 
                     MouseArea {
                         anchors.fill: parent

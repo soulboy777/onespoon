@@ -16,9 +16,7 @@ a = Analysis(
         ('config/models.yaml', 'config'),
         ('config/plan-template.md', 'config'),
         # UI resources
-        ('src/ui/resources/icons/*', 'resources/icons'),
-        ('src/ui/resources/fonts/*', 'resources/fonts'),
-        ('src/ui/resources/character/*', 'resources/character'),
+        ('src/ui/resources/characters/*', 'resources/characters'),
     ],
     hiddenimports=[
         # PySide6 QML

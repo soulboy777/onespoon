@@ -273,9 +273,9 @@ agent开发/
 │   │   ├── qml/                # QML 组件 (16 个文件)
 │   │   │   ├── MainSleep.qml     # 睡觉布局 (默认)
 │   │   └── resources/          # 角色立绘/图标/字体
-│   │       └── character/
-│   │           ├── sleeping.png  # 睡觉立绘 (默认)
-│   │           ├── idle.png      # 待机 (画师提供)
+│   │       └── characters/
+│   │           ├── sleeping.apng  # 睡觉动态 (默认)
+│   │           ├── idle.apng      # 待机动态
 │   │
 │   ├── rag/                    # ★RAG 知识库
 │   │   ├── database.py         # 独立 SQLite (knowledge.db)
@@ -532,11 +532,11 @@ pip install PyInstaller
 
 | 文件名 | 用途 | 说明 |
 |--------|------|------|
-| `sleeping.png` | **睡觉 (默认)** | 竖着睡的角色，枕头在头左侧，被子盖身体 |
-| `idle.png` | 待机表情 | 角色平常的样子（经典布局用） |
-| `thinking.png` | 思考中 | 用户输入后、等待回答时 |
-| `happy.png` | 完成 | 回答成功后短暂显示 |
-| `busy.png` | 忙碌/错误 | 执行出错时 |
+| `sleeping.apng` | **睡觉 (默认)** | 竖着睡，呼吸起伏+抖脚 (APNG) |
+| `thinking.apng` | 思考中 | 用户输入后、等待回答时 |
+| `happy.apng` | 完成 | 回答成功后短暂显示 |
+| `busy.apng` | 忙碌/错误 | 执行出错时 |
+| `idle.apng` | 待机 | 经典布局用，呼吸+眨眼+微晃 |
 
 **规格要求：**
 - 格式：PNG (RGBA, 透明背景)
