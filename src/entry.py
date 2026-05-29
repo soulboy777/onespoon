@@ -37,11 +37,20 @@ def main():
 
 
 def _interactive_prompt():
+    # 双击启动 (非交互终端) → 直接进桌面 UI
+    if not sys.stdin.isatty():
+        from src.ui.main_window import main as ui_main
+        ui_main()
+        return
+
     print(f"\n  Agent 开发助手  v1.0.1\n")
     print("  1. CLI 命令行  (agent-dev chat)")
     print("  2. 桌面悬浮窗 UI  (agent-dev desktop)")
     print()
-    choice = input("  选择 [1/2] (默认 2): ").strip()
+    try:
+        choice = input("  选择 [1/2] (默认 2): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        choice = "2"
 
     if choice == "1":
         print("\n启动 CLI 对话...\n")
