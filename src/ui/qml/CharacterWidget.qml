@@ -7,7 +7,7 @@ Item {
     height: 300
 
     property string charState: "idle"
-    property string currentImage: "resources/characters/" + charState + ".png"
+    property string currentImage: "../resources/characters/" + charState + ".png"
     property var theme: ({
         "text_secondary": "#a0a0b0"
     })

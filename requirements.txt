@@ -14,7 +14,6 @@ sqlalchemy>=2.0.0
 chromadb>=0.5.0
 
 # Document Parsing
-unstructured>=0.12.0
 python-docx>=1.1.0
 PyPDF2>=3.0.0
 
@@ -51,4 +50,5 @@ pytest-asyncio>=0.23.0
 
 # Build (PyInstaller 打包)
 PyInstaller>=6.0.0
+Pillow>=10.0.0
 

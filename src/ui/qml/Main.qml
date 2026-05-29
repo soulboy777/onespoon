@@ -156,6 +156,14 @@ Window {
             }
 
                 // 操作按钮
+                Item { Layout.fillWidth: true }
+
+                IconButton {
+                    iconText: "🔄"
+                    tooltip: "切换睡觉布局"
+                    onClicked: uiBackend.switchLayout("sleep")
+                }
+
                 IconButton {
                     iconText: "⚙"
                     tooltip: "设置"

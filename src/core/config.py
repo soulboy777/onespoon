@@ -74,6 +74,16 @@ class PlanningConfig(BaseModel):
     max_steps_per_plan: int = 20
 
 
+class FormatConfig(BaseModel):
+    main_tag: str = "【回】"
+    sub_tag: str = "【细】"
+    main_font_size: int = 15
+    sub_font_size: int = 12
+    sub_color: str = "#808090"
+    style: str = "childlike"
+    tone_words: list[str] = Field(default_factory=lambda: ["嘞", "嘿", "嘻", "吁"])
+
+
 class LoggingConfig(BaseModel):
     level: str = "INFO"
     file: str = "data/logs/agent.log"
@@ -90,6 +100,7 @@ class AppConfig(BaseSettings):
     compression: CompressionConfig = Field(default_factory=CompressionConfig)
     rag: RagConfig = Field(default_factory=RagConfig)
     planning: PlanningConfig = Field(default_factory=PlanningConfig)
+    format: FormatConfig = Field(default_factory=FormatConfig)
     classifier: ClassifierConfig = Field(default_factory=ClassifierConfig)
     scheduler: SchedulerConfig = Field(default_factory=SchedulerConfig)
     storage: StorageConfig = Field(default_factory=StorageConfig)

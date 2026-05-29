@@ -10,13 +10,15 @@ a = Analysis(
     binaries=[],
     datas=[
         # QML files
-        ('src/ui/qml/*.qml', 'qml'),
+        ('src/ui/qml/*.qml', 'src/ui/qml'),
         # Config files (non-sensitive)
         ('config/default.yaml', 'config'),
         ('config/models.yaml', 'config'),
         ('config/plan-template.md', 'config'),
         # UI resources
-        ('src/ui/resources/characters/*', 'resources/characters'),
+        ('src/ui/resources/characters/*', 'src/ui/resources/characters'),
+        # App icon
+        ('icon/agent-dev.ico', 'icon'),
     ],
     hiddenimports=[
         # PySide6 QML
@@ -119,6 +121,7 @@ a = Analysis(
         'pandas',
         'pandas.tests',
         'PIL',
+        'unstructured',
     ],
     noarchive=False,
 )

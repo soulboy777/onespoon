@@ -129,8 +129,8 @@ Window {
                     width: 170
                     height: 390
                     fillMode: Image.PreserveAspectFit
-                    source: characterState === "idle" ? "resources/characters/sleeping.png"
-                            : "resources/characters/" + characterState + ".png"
+                    source: characterState === "idle" ? "../resources/characters/sleeping.png"
+                            : "../resources/characters/" + characterState + ".png"
                     smooth: false
 
                     // 呼吸动画 (循环)
@@ -218,17 +218,6 @@ Window {
                         clip: true
                     }
                 }
-
-                    ResponsePanel {
-                        id: responsePanel
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        visible: mainWindow.responseVisible || true
-                        textContent: mainWindow.responseText
-                        clip: true
-                    }
-                }
-            }
 
             // 角色 (下部 — 脚)
             Item {

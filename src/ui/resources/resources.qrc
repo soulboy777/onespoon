@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>characters/idle.png</file>
-        <file>characters/sleeping.png</file>
-        <file>characters/thinking.png</file>
-        <file>characters/happy.png</file>
-        <file>characters/busy.png</file>
-    </qresource>
-</RCC>

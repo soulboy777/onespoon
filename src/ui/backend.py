@@ -23,10 +23,7 @@ class UIBackend(QObject):
     mainReady = Signal(str)
     subReady = Signal(str)
     modeChanged = Signal(str)
-    stepUpdated = Signal(int, str)
     characterStateChanged = Signal(str)
-    settingsLoaded = Signal("QVariantMap")
-    planListReady = Signal("QVariantList")
 
     def __init__(self, parent=None):
         super().__init__(parent)
