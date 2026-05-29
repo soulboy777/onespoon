@@ -33,7 +33,7 @@ Rectangle {
         }
 
         Text {
-            text: "v0.2.0"
+            text: "v1.0.1"
             color: "#a0a0b0"
             font.pixelSize: 13
         }
@@ -65,7 +65,7 @@ Rectangle {
             rowSpacing: 6
             columnSpacing: 16
 
-            InfoRow { label: "版本"; value: "v0.2.0" }
+            InfoRow { label: "版本"; value: "v1.0.1" }
             InfoRow { label: "构建日期"; value: "2026-05-17" }
             InfoRow { label: "Python"; value: "3.11" }
             InfoRow { label: "Qt"; value: "6.6 (PySide6)" }

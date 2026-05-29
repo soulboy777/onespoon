@@ -1,8 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_submodules
 
-ROOT = Path(__file__).parent
+# Auto-discover all submodules for problematic packages
+rich_imports = collect_submodules('rich')
+langchain_imports = collect_submodules('langchain')
+pydantic_imports = collect_submodules('pydantic')
+
+ROOT = Path(".").resolve()
 
 a = Analysis(
     ['src/entry.py'],
@@ -31,20 +37,12 @@ a = Analysis(
         'PySide6.QtQuick.Controls',
         'PySide6.QtQuick.Layouts',
         'PySide6.QtQuick.Effects',
-        # AI / LLM
-        'langchain',
-        'langchain.agents',
-        'langchain.tools',
-        'langchain_openai',
-        'langchain_community',
-        'langchain_community.chat_models',
-        'langchain_community.embeddings',
-        'langchain_core',
-        'langchain_core.language_models',
-        'langchain_core.messages',
-        'langchain_core.prompts',
-        'langchain_text_splitters',
-        'langchain_anthropic',
+        # Rich (all submodules auto)
+    ] + rich_imports + [
+        # LangChain (all submodules auto)
+    ] + langchain_imports + [
+        # Pydantic (all submodules auto)
+    ] + pydantic_imports + [
         # litellm
         'litellm',
         # ChromaDB
@@ -78,13 +76,14 @@ a = Analysis(
         'yaml',
         # Logging
         'loguru',
+        # langchain_anthropic
+        'langchain_openai',
+        'langchain_community',
+        'langchain_anthropic',
+        'langchain_text_splitters',
         # CLI
         'typer',
-        'rich',
-        'rich.console',
-        'rich.markdown',
-        'rich.panel',
-        'rich.table',
+        # rich (full, auto-discovered already)
         # Scheduling
         'apscheduler',
         'apscheduler.schedulers',

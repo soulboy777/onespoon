@@ -4,7 +4,7 @@
 
 [Setup]
 AppName=Agent开发助手
-AppVersion=0.2.0
+AppVersion=1.0.1
 AppPublisher=soulboy777
 AppPublisherURL=https://github.com/soulboy777/onespoon
 AppSupportURL=https://github.com/soulboy777/onespoon/issues
@@ -12,7 +12,7 @@ AppUpdatesURL=https://github.com/soulboy777/onespoon/releases
 DefaultDirName={autopf}\AgentDev
 DefaultGroupName=Agent开发助手
 OutputDir=.\dist
-OutputBaseFilename=AgentDev-Setup-0.2.0
+OutputBaseFilename=AgentDev-Setup-1.0.1
 SetupIconFile=..\icon\agent-dev.ico
 Compression=lzma2
 SolidCompression=yes
@@ -21,7 +21,7 @@ PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
-Name: "chinese"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: "..\dist\agent-dev\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

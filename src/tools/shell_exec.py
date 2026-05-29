@@ -1,6 +1,7 @@
 """命令行执行工具（沙箱模式）"""
 
 import subprocess
+from typing import ClassVar
 
 from pydantic import BaseModel, Field
 
@@ -23,7 +24,7 @@ class ShellExecTool(BaseTool):
     category: str = "system"
     is_readonly: bool = False
 
-    SAFE_PREFIXES = [
+    SAFE_PREFIXES: ClassVar[list] = [
         "dir", "ls", "cat", "type", "echo", "wc",
         "find", "which", "where", "pwd", "cd",
         "head", "tail", "sort", "uniq", "grep",

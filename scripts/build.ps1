@@ -12,7 +12,7 @@ $ROOT = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ROOT = Split-Path -Parent $ROOT
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " Agent 开发助手 v0.2.0 — 构建脚本" -ForegroundColor Cyan
+Write-Host " Agent 开发助手 v1.0.1 — 构建脚本" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

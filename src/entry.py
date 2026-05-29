@@ -37,7 +37,7 @@ def main():
 
 
 def _interactive_prompt():
-    print(f"\n  Agent 开发助手  v0.2.0\n")
+    print(f"\n  Agent 开发助手  v1.0.1\n")
     print("  1. CLI 命令行  (agent-dev chat)")
     print("  2. 桌面悬浮窗 UI  (agent-dev desktop)")
     print()
