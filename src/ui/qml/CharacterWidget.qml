@@ -7,13 +7,13 @@ Item {
     height: 300
 
     property string charState: "idle"
-    property string currentImage: "resources/characters/" + charState + ".apng"
+    property string currentImage: "resources/characters/" + charState + ".png"
     property var theme: ({
         "text_secondary": "#a0a0b0"
     })
 
-    // 角色动态 APNG — 呼吸/眨眼/表情由画师做到图里
-    AnimatedImage {
+    // 角色主体 (PNG) — 顶部对齐
+    Image {
         id: charImage
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
@@ -21,9 +21,16 @@ Item {
         height: 280
         fillMode: Image.PreserveAspectFit
         source: currentImage
-        smooth: true
-        playing: true
-        paused: false
+        smooth: false     // 像素画不需平滑
+        opacity: 1
+
+        // 呼吸动画 (循环)
+        SequentialAnimation on opacity {
+            running: true
+            loops: Animation.Infinite
+            NumberAnimation { from: 0.85; to: 1.0; duration: 1500; easing.type: Easing.InOutSine }
+            NumberAnimation { from: 1.0; to: 0.85; duration: 1500; easing.type: Easing.InOutSine }
+        }
 
         // 悬停放大
         MouseArea {
@@ -48,6 +55,20 @@ Item {
         }
     }
 
+    // 眨眼 (周期性)
+    Timer {
+        interval: 4000
+        running: true
+        repeat: true
+        onTriggered: blinkAnimation.start()
+    }
+
+    SequentialAnimation {
+        id: blinkAnimation
+        NumberAnimation { target: charImage; property: "scale"; to: 10; duration: 80 }
+        NumberAnimation { target: charImage; property: "scale"; to: 1; duration: 120 }
+    }
+
     // 底部状态标签
     Text {
         anchors.bottom: parent.bottom
@@ -56,9 +77,9 @@ Item {
             switch (charState) {
                 case "idle": return "";
                 case "sleeping": return "";
-                case "thinking": return "思考中...";
-                case "happy": return "完成!";
-                case "busy": return "处理中";
+                case "thinking": return "Thinking...";
+                case "happy": return "Done!";
+                case "busy": return "Oops!";
                 default: return "";
             }
         }

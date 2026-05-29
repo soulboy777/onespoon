@@ -120,8 +120,8 @@ Window {
                 Layout.preferredWidth: 190
                 Layout.fillHeight: true
 
-                // 动态 APNG — 呼吸/表情由画师做到图里
-                AnimatedImage {
+                // 像素画角色 (Image, 呼吸/眨眼由 QML 处理)
+                Image {
                     id: charImage
                     anchors.top: parent.top
                     anchors.topMargin: -8
@@ -129,11 +129,17 @@ Window {
                     width: 170
                     height: 390
                     fillMode: Image.PreserveAspectFit
-                    source: characterState === "idle" ? "resources/characters/sleeping.apng"
-                            : "resources/characters/" + characterState + ".apng"
-                    smooth: true
-                    playing: true
-                    paused: false
+                    source: characterState === "idle" ? "resources/characters/sleeping.png"
+                            : "resources/characters/" + characterState + ".png"
+                    smooth: false
+
+                    // 呼吸动画 (循环)
+                    SequentialAnimation on opacity {
+                        running: true
+                        loops: Animation.Infinite
+                        NumberAnimation { from: 0.85; to: 1.0; duration: 1800; easing.type: Easing.InOutSine }
+                        NumberAnimation { from: 1.0; to: 0.85; duration: 1800; easing.type: Easing.InOutSine }
+                    }
 
                     MouseArea {
                         anchors.fill: parent
