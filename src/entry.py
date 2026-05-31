@@ -21,8 +21,8 @@ def main():
 
     args = sys.argv[1:]
 
-    if not args:
-        # 双击 / 无参数 → 桌面 UI
+    if not args or args[0] == "desktop":
+        # 双击 / 无参数 / desktop → 桌面 UI
         from src.ui.main_window import main as ui_main
         ui_main()
     else:
