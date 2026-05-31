@@ -110,6 +110,8 @@ class UIBackend(QObject):
     def toggleMode(self):
         """切换 Plan/Execute 模式"""
         self._ensure_agent()
+        if self._agent is None:
+            return
         current = self._agent.mode
         new = "plan" if current == "execute" else "execute"
         self._agent.set_mode(new)

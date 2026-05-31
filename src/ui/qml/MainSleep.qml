@@ -374,3 +374,4 @@ Window {
         showAnimation.start()
     }
 }
+}

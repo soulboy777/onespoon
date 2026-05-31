@@ -1,6 +1,8 @@
 """用户配置管理器 — 读写 user.yaml"""
 
 import os
+import sys
+
 from pathlib import Path
 from typing import Optional
 
@@ -10,12 +12,14 @@ from loguru import logger
 from src.ui.user_config import UserConfig
 
 
-def _get_project_root() -> Path:
-    return Path(__file__).resolve().parent.parent.parent
-
-
 def _get_user_config_path() -> str:
-    return str(_get_project_root() / "config" / "user.yaml")
+    if getattr(sys, "frozen", False):
+        # 打包后存到 %APPDATA%/AgentDev/ (持久化)
+        appdata = os.environ.get("APPDATA", os.path.expanduser("~"))
+        path = Path(appdata) / "AgentDev" / "user.yaml"
+        os.makedirs(path.parent, exist_ok=True)
+        return str(path)
+    return str(Path(__file__).resolve().parent.parent.parent / "config" / "user.yaml")
 
 
 def load_user_config() -> UserConfig:
